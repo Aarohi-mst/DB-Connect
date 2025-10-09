@@ -1,15 +1,39 @@
+//APPROACH 2------------------------------
+import dotenv from "dotenv";
+import connectDB from "./db/index.js";
+dotenv.config({
+  path: "./env",
+});
+connectDB();
+
+/*
+APPROACH 1-------------------------------
+import mongoose from "mongoose";
+import { myDB } from "./constants";
 import express from "express";
 import cors from "cors";
-const app = express();
 const PORT = process.env.PORT || 3000;
+const app = express();
 const corsOptions = {
   origin: "http://localhost:5173",
   optionsSuccessStatus: 200,
 };
 app.use(cors(corsOptions));
-app.get("/", (req, res) => {
-  res.send("Hello World!");
-});
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-});
+//iffi use ; before start of function statements
+(async () => {
+  try {
+    await mongoose.connect(`${process.env.MONGO_URI}/${myDB}`);
+    app.get("/", (req, res) => {
+      res.send("Hello World!");
+    });
+    app.listen(PORT, () => {
+      console.log(`Server is running on http://localhost:${PORT}`);
+    });
+    app.on("error", () => {
+      console.log("ERROR");
+    });
+  } catch (err) {
+    console.error("ERROR: ", err);
+  }
+})();
+*/
