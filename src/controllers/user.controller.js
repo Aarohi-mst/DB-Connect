@@ -4,6 +4,7 @@ import User from "../models/user.model.js";
 import uploadOnClodinary from "../utils/cloudinary.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken";
+import mongoose from "mongoose";
 
 const generateAccessAndRefreshToken = async (userId) => {
   try {
@@ -136,7 +137,7 @@ const logoutUser = asyncHandler(async (req, res) => {
     req.user._id,
     {
       $set: {
-        refreshToken: undefined,
+        refreshToken: 1, //this removes the field from the document
       },
     },
     { new: true }
@@ -308,7 +309,7 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
   const channel = await User.aggregate([
     {
       $match: {
-        username: username.toLowerCase(),
+        username: username?.toLowerCase(),
       },
     },
     {
@@ -379,7 +380,6 @@ const getUserWatchHistory = asyncHandler(async (req, res) => {
         foreignField: "_id",
         as: "watchHistory",
         pipeline: [
-          //sub-pipelines or nested pipelines
           {
             $lookup: {
               from: "users",
@@ -394,26 +394,31 @@ const getUserWatchHistory = asyncHandler(async (req, res) => {
                     avatar: 1,
                   },
                 },
-                {
-                  $addFields: {
-                    owner: {
-                      $first: "$owner",
-                    },
-                  },
-                },
               ],
+            },
+          },
+          {
+            $addFields: {
+              owner: { $arrayElemAt: ["$owner", 0] },
             },
           },
         ],
       },
     },
+    {
+      $project: {
+        _id: 0,
+        watchHistory: 1,
+      },
+    },
   ]);
+
   return res
     .status(200)
     .json(
       new ApiResponse(
         200,
-        user[0].watchHistory,
+        { data: user[0]?.watchHistory || [] },
         "Watch history fetched successfully"
       )
     );
