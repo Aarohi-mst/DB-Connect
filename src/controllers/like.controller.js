@@ -73,6 +73,9 @@ const toggleTweetLike = asyncHandler(async (req, res) => {
         .json(new ApiResponse(200, "Tweet like deleted successfully"));
     } else {
       await Tweet.create({ tweetId, userId });
+      return res
+        .status(200)
+        .json(new ApiResponse(200, "Tweet liked successfully"));
     }
   } catch (error) {
     throw new ApiError(400, "Failed to toggle like on tweet");
